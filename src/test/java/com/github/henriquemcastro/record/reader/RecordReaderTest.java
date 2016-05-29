@@ -1,19 +1,19 @@
-package com.github.henriquemcastro;
+package com.github.henriquemcastro.record.reader;
 
+import com.github.henriquemcastro.Processor;
+import com.github.henriquemcastro.TestingUtils;
+import com.github.henriquemcastro.record.reader.RecordReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
-import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -34,7 +34,7 @@ public class RecordReaderTest {
     @Before
     public void setUp(){
         doNothing().when(processor).process(any(String.class));
-        when(properties.getProperty(RecordReader.FILE_PATH)).thenReturn(getResourcePath("example-1/example.txt"));
+        when(properties.getProperty(RecordReader.FILE_PATH)).thenReturn(TestingUtils.getResourcePath("example-1/example.txt"));
 
         recordReader = new RecordReader(properties, processor);
     }
@@ -69,8 +69,4 @@ public class RecordReaderTest {
         inOrder.verify(processor).process("5");
     }
 
-    private String getResourcePath(String resource){
-        URL url = Thread.currentThread().getContextClassLoader().getResource(resource);
-        return url.getPath();
-    }
 }

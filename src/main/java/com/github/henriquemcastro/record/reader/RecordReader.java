@@ -1,4 +1,6 @@
-package com.github.henriquemcastro;
+package com.github.henriquemcastro.record.reader;
+
+import com.github.henriquemcastro.Processor;
 
 import javax.inject.Inject;
 import javax.inject.Named;
