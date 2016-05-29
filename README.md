@@ -1,4 +1,4 @@
-# kanpeki
+# Kanpeki
 Lightweight library for parsing log files
 
 ### Status
