@@ -5,5 +5,10 @@ package com.github.henriquemcastro;
  */
 public interface Processor {
 
-    void process(String record);
+    /**
+     *
+     * @param record
+     * @return Wether or not to commit the file position offset to disk
+     */
+    boolean process(String record);
 }

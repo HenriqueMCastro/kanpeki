@@ -27,6 +27,7 @@ public class OffsetManagerDb implements OffsetManager {
     @Override
     public synchronized void commitOffset(String filePath, long offset) {
         offsetMap.put(filePath, offset);
+        offsetDb.commit();
     }
 
     @Override

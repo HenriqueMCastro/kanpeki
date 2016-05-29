@@ -16,30 +16,37 @@ public class RecordReader {
 
     private final String filePath;
     private final Processor processor;
+    private final OffsetManager offsetManager;
+
+    @Inject
+    public RecordReader(@Named(FILE_PATH) String filePath, Processor processor, OffsetManager offsetManager){
+        this.filePath = filePath;
+        this.processor = processor;
+        this.offsetManager = offsetManager;
+    }
 
     @Inject
     public RecordReader(@Named(FILE_PATH) String filePath, Processor processor){
-        this.filePath = filePath;
-        this.processor = processor;
-    }
-
-    @Inject
-    public RecordReader(Properties properties, Processor processor){
-        String filePath = properties.getProperty(FILE_PATH);
-        if(filePath == null){
-            throw new IllegalArgumentException(FILE_PATH + " was not set");
-        }
-        this.filePath = filePath;
-        this.processor = processor;
+        this(filePath, processor, new OffsetManagerNoOp());
     }
 
     public void processFile() throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(new File(filePath)));
-        String line;
-        while ((line = br.readLine()) != null) {
-            processor.process(line);
+        long startOffset = getStartOffset();
+
+        try(RandomAccessFile randomAccessFile = new RandomAccessFile(new File(filePath), "r")) {
+            randomAccessFile.seek(startOffset);
+            String line;
+            while ((line = randomAccessFile.readLine()) != null) {
+                boolean commitOffset = processor.process(line);
+                if (commitOffset) {
+                    offsetManager.commitOffset(filePath, randomAccessFile.getFilePointer());
+                }
+            }
         }
-        br.close();
+    }
+
+    private long getStartOffset(){
+        return offsetManager.getLastOffset(filePath);
     }
 
 

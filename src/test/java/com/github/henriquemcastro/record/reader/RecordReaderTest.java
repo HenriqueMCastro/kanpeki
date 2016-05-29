@@ -23,20 +23,24 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class RecordReaderTest {
 
-    @Mock
-    Properties properties;
+    private final String filePath = TestingUtils.getResourcePath("example-1/example.txt");
+
 
     @Mock
     Processor processor;
+
+    @Mock
+    OffsetManager offsetManager;
 
     private RecordReader recordReader;
 
     @Before
     public void setUp(){
-        doNothing().when(processor).process(any(String.class));
-        when(properties.getProperty(RecordReader.FILE_PATH)).thenReturn(TestingUtils.getResourcePath("example-1/example.txt"));
+        when(processor.process(anyString())).thenReturn(true);
+        when(offsetManager.getLastOffset(filePath)).thenReturn(0L);
+        doNothing().when(offsetManager).commitOffset(anyString(), anyLong());
 
-        recordReader = new RecordReader(properties, processor);
+        recordReader = new RecordReader(filePath, processor, offsetManager);
     }
 
     @Test
@@ -63,6 +67,21 @@ public class RecordReaderTest {
 
         InOrder inOrder = inOrder(processor, processor, processor, processor, processor);
         inOrder.verify(processor).process("1");
+        inOrder.verify(processor).process("2");
+        inOrder.verify(processor).process("3");
+        inOrder.verify(processor).process("4");
+        inOrder.verify(processor).process("5");
+    }
+
+    @Test
+    public void testThatRecordReaderCanStartFromOffset() throws IOException {
+        long offset = 2L; // 2nd line
+        when(offsetManager.getLastOffset(filePath)).thenReturn(offset);
+
+        recordReader.processFile();
+
+        verify(processor, times(4)).process(anyString());
+        InOrder inOrder = inOrder(processor, processor, processor, processor);
         inOrder.verify(processor).process("2");
         inOrder.verify(processor).process("3");
         inOrder.verify(processor).process("4");
