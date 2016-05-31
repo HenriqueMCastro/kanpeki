@@ -1,8 +1,6 @@
 package com.github.henriquemcastro.record.reader;
 
 import com.github.henriquemcastro.Processor;
-import org.apache.commons.io.FileSystemUtils;
-import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import java.io.File;
 import java.io.IOException;
