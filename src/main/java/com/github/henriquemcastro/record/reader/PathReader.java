@@ -1,13 +1,15 @@
 package com.github.henriquemcastro.record.reader;
 
 import com.github.henriquemcastro.Processor;
+import org.apache.commons.io.FileSystemUtils;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.Properties;
-import java.util.function.Consumer;
 
 
 /**
@@ -15,43 +17,49 @@ import java.util.function.Consumer;
  */
 public class PathReader {
 
-    public static final String FILES_PATH = "files.path";
-
-    public static final String MANAGE_OFFSETS_ENABLED = "manage.offsets.enabled";
-
-    public static final String MANAGE_OFFSETS_ENABLED_DEFAULT = "false";
-
-    public static final String OFFSETS_DB_PATH = "offsets.db.path";
-
     private final String path;
     private final OffsetManager offsetManager;
+    private final String fileFormat;
+    private final PathMatcher pathMatcher;
     private Processor processor;
 
-    public PathReader(String path, Processor processor, OffsetManager offsetManager){
+    public PathReader(String path, String fileFormat, Processor processor, OffsetManager offsetManager){
         this.path = path;
+        this.fileFormat = fileFormat;
         this.processor = processor;
         this.offsetManager = offsetManager;
+        pathMatcher = FileSystems.getDefault().getPathMatcher("glob:" + path + "/" + fileFormat);
     }
 
     public void processPath() throws IOException {
-        File folder = new File(path);
-        File[] listOfFiles = folder.listFiles();
-
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
-                RecordReader recordReader = new RecordReader(listOfFiles[i].toString(), processor, offsetManager);
-                recordReader.processFile();
-            }
-//            else if (listOfFiles[i].isDirectory()) {
-//                System.out.println("Directory " + listOfFiles[i].getName());
-//            }
-        }
-
-
-//
-//        Paths.get(this.path).forEach(file -> {
-//            new RecordReader(file.toString(), processor, new OffsetManagerNoOp());
-//        });
-
+        processFolder(removeStarsFromPath(path));
     }
+
+    private void processFolder(String folderPath) throws IOException {
+        File folder = new File(folderPath);
+        if(folder.exists()) {
+            File[] listOfFiles = folder.listFiles();
+            for (int i = 0; i < listOfFiles.length; i++) {
+                File file = listOfFiles[i];
+                if (file.isFile() && pathMatcher.matches(Paths.get(file.toString()))) {
+                    RecordReader recordReader = new RecordReader(file.toString(), processor, offsetManager);
+                    recordReader.processFile();
+                } else if (file.isDirectory()) {
+                    processFolder(file.getPath());
+                }
+            }
+        }
+    }
+
+    private String removeStarsFromPath(String folderPath){
+        String res = folderPath;
+        if(folderPath.endsWith("**")){
+            res = folderPath.substring(0, folderPath.length() - "**".length());
+        }
+        else if(folderPath.endsWith("**/")){
+            res = folderPath.substring(0, folderPath.length() - "**/".length());
+        }
+        return res;
+    }
+
 }

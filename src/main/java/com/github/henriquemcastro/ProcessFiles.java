@@ -21,8 +21,13 @@ public class ProcessFiles {
 
     public static final String OFFSETS_DB_PATH = "offsets.db.path";
 
+    public static final String FILES_FORMAT = "files.format";
+
+    public static final String FILES_FORMAT_DEFAULT = "*";
+
     public static void processFiles(Properties properties, Processor processor) throws IOException {
         String path = properties.getProperty(FILES_PATH);
+        String fileFormat = properties.getProperty(FILES_FORMAT, FILES_FORMAT_DEFAULT);
         boolean manageOffsetsEnabled = Boolean.valueOf(properties.getProperty(MANAGE_OFFSETS_ENABLED, MANAGE_OFFSETS_ENABLED_DEFAULT));
         String offsetsDbPath = properties.getProperty(OFFSETS_DB_PATH);
         OffsetManager offsetManager;
@@ -33,7 +38,7 @@ public class ProcessFiles {
             offsetManager = new OffsetManagerNoOp();
         }
 
-        new PathReader(path, processor, offsetManager).processPath();
+        new PathReader(path, fileFormat, processor, offsetManager).processPath();
     }
 
 }
