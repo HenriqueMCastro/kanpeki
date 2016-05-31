@@ -5,10 +5,14 @@ import com.github.henriquemcastro.TestingUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyLong;
@@ -39,7 +43,7 @@ public class PathReaderTest {
         when(offsetManager.getLastOffset(anyString())).thenReturn(0L);
         doNothing().when(offsetManager).commitOffset(anyString(), anyLong());
 
-        pathReader = new PathReader(folderPath, processor);
+        pathReader = new PathReader(folderPath, processor, offsetManager);
     }
 
     @Test
@@ -57,4 +61,31 @@ public class PathReaderTest {
         verify(processor, times(1)).process("9");
         verify(processor, times(1)).process("10");
     }
+
+    @Test
+    public void testThatItCanHandleOffsets() throws IOException {
+//            pathReader = new PathReader(folderPath, processor, offsetManager);
+
+        String file1 = TestingUtils.getResourcePath("example-1/example.txt");
+        String file2 = TestingUtils.getResourcePath("example-1/example-2.txt");
+        String file3 = TestingUtils.getResourcePath("example-1/example-3.txt");
+
+        when(offsetManager.getLastOffset(file1)).thenReturn(2L);
+        when(offsetManager.getLastOffset(file2)).thenReturn(4L);
+        when(offsetManager.getLastOffset(file3)).thenReturn(0L);
+
+
+        pathReader.processPath();
+
+        verify(processor, times(7)).process(anyString());
+        verify(processor, times(1)).process("2");
+        verify(processor, times(1)).process("3");
+        verify(processor, times(1)).process("4");
+        verify(processor, times(1)).process("5");
+        verify(processor, times(1)).process("8");
+        verify(processor, times(1)).process("9");
+        verify(processor, times(1)).process("10");
+
+    }
+
 }

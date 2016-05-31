@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 import java.util.function.Consumer;
 
 
@@ -14,12 +15,22 @@ import java.util.function.Consumer;
  */
 public class PathReader {
 
+    public static final String FILES_PATH = "files.path";
+
+    public static final String MANAGE_OFFSETS_ENABLED = "manage.offsets.enabled";
+
+    public static final String MANAGE_OFFSETS_ENABLED_DEFAULT = "false";
+
+    public static final String OFFSETS_DB_PATH = "offsets.db.path";
+
     private final String path;
+    private final OffsetManager offsetManager;
     private Processor processor;
 
-    public PathReader(String path, Processor processor){
+    public PathReader(String path, Processor processor, OffsetManager offsetManager){
         this.path = path;
         this.processor = processor;
+        this.offsetManager = offsetManager;
     }
 
     public void processPath() throws IOException {
@@ -28,7 +39,7 @@ public class PathReader {
 
         for (int i = 0; i < listOfFiles.length; i++) {
             if (listOfFiles[i].isFile()) {
-                RecordReader recordReader = new RecordReader(listOfFiles[i].toString(), processor, new OffsetManagerNoOp());
+                RecordReader recordReader = new RecordReader(listOfFiles[i].toString(), processor, offsetManager);
                 recordReader.processFile();
             }
 //            else if (listOfFiles[i].isDirectory()) {
