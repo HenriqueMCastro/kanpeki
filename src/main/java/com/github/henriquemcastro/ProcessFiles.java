@@ -13,23 +13,12 @@ import java.util.Properties;
  */
 public class ProcessFiles {
 
-    public static final String FILES_PATH = "files.path";
-
-    public static final String MANAGE_OFFSETS_ENABLED = "manage.offsets.enabled";
-
-    public static final String MANAGE_OFFSETS_ENABLED_DEFAULT = "false";
-
-    public static final String OFFSETS_DB_PATH = "offsets.db.path";
-
-    public static final String FILES_FORMAT = "files.format";
-
-    public static final String FILES_FORMAT_DEFAULT = "*";
 
     public static void processFiles(Properties properties, Processor processor) throws IOException {
-        String path = properties.getProperty(FILES_PATH);
-        String fileFormat = properties.getProperty(FILES_FORMAT, FILES_FORMAT_DEFAULT);
-        boolean manageOffsetsEnabled = Boolean.valueOf(properties.getProperty(MANAGE_OFFSETS_ENABLED, MANAGE_OFFSETS_ENABLED_DEFAULT));
-        String offsetsDbPath = properties.getProperty(OFFSETS_DB_PATH);
+        String path = properties.getProperty(KanpekiConfig.FILES_PATH);
+        String fileFormat = properties.getProperty(KanpekiConfig.FILES_FORMAT, KanpekiConfig.FILES_FORMAT_DEFAULT);
+        boolean manageOffsetsEnabled = Boolean.valueOf(properties.getProperty(KanpekiConfig.MANAGE_OFFSETS_ENABLED, KanpekiConfig.MANAGE_OFFSETS_ENABLED_DEFAULT));
+        String offsetsDbPath = properties.getProperty(KanpekiConfig.OFFSETS_DB_PATH);
         OffsetManager offsetManager;
         if(manageOffsetsEnabled){
             offsetManager = new OffsetManagerDb(offsetsDbPath);
