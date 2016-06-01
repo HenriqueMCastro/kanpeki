@@ -78,6 +78,7 @@ public class RecordReaderTest {
         long offset = 2L; // 2nd line
         when(offsetManager.getLastOffset(filePath)).thenReturn(offset);
 
+        recordReader = new RecordReader(filePath, processor, offsetManager);
         recordReader.processFile();
 
         verify(processor, times(4)).process(anyString());

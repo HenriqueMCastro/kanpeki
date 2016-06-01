@@ -17,4 +17,7 @@ public class KanpekiConfig {
 
     public static final String FILES_FORMAT_DEFAULT = "*";
 
+    public static final String ONE_PASS_ONLY_ENABLED = "one.pass.only.enabled";
+
+    public static final String ONE_PASS_ONLY_ENABLED_DEFAULT = "false";
 }

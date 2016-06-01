@@ -21,12 +21,14 @@ public class RecordReader {
     private final String filePath;
     private final Processor processor;
     private final OffsetManager offsetManager;
+    private long startOffset;
 
     @Inject
     public RecordReader(@Named(FILE_PATH) String filePath, Processor processor, OffsetManager offsetManager){
         this.filePath = filePath;
         this.processor = processor;
         this.offsetManager = offsetManager;
+        startOffset = getStartOffset();
     }
 
     @Inject
@@ -35,7 +37,6 @@ public class RecordReader {
     }
 
     public void processFile() throws IOException {
-        long startOffset = getStartOffset();
         LOG.info("Going to process file " + filePath + ". Starting offset = " + startOffset);
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(new File(filePath), "r")) {
             randomAccessFile.seek(startOffset);
@@ -46,9 +47,12 @@ public class RecordReader {
                     offsetManager.commitOffset(filePath, randomAccessFile.getFilePointer());
                 }
             }
+            long endOffset = randomAccessFile.getFilePointer();
+            LOG.info("Processed from " + startOffset + " to " + endOffset + " + for file "  + filePath);
+            startOffset = endOffset;
         }
 
-        LOG.info("Processed file " + filePath);
+
     }
 
     private long getStartOffset(){

@@ -14,7 +14,7 @@ import java.util.Properties;
 public class ProcessFiles {
 
 
-    public static void processFiles(Properties properties, Processor processor) throws IOException {
+    public static void processFiles(Properties properties, Processor processor) throws IOException, InterruptedException {
         String path = properties.getProperty(KanpekiConfig.FILES_PATH);
         String fileFormat = properties.getProperty(KanpekiConfig.FILES_FORMAT, KanpekiConfig.FILES_FORMAT_DEFAULT);
         boolean manageOffsetsEnabled = Boolean.valueOf(properties.getProperty(KanpekiConfig.MANAGE_OFFSETS_ENABLED, KanpekiConfig.MANAGE_OFFSETS_ENABLED_DEFAULT));
@@ -26,8 +26,9 @@ public class ProcessFiles {
         else {
             offsetManager = new OffsetManagerNoOp();
         }
+        boolean onePassOnly = Boolean.valueOf(properties.getProperty(KanpekiConfig.ONE_PASS_ONLY_ENABLED, KanpekiConfig.ONE_PASS_ONLY_ENABLED_DEFAULT));
 
-        new PathReader(path, fileFormat, processor, offsetManager).processPath();
+        new PathReader(path, fileFormat, processor, offsetManager, onePassOnly).processPath();
         processor.close();
     }
 

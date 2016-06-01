@@ -8,7 +8,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
 
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyLong;
@@ -23,6 +28,10 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class PathReaderTest {
 
+    private static final boolean ONE_PASS_ONLY = true;
+
+    private static final boolean WATCH_FILES = false;
+
     private final String folderPath = TestingUtils.getResourcePath("example-1");
 
     private final String fileFormat = "*";
@@ -36,16 +45,16 @@ public class PathReaderTest {
     private PathReader pathReader;
 
     @Before
-    public void setUp(){
+    public void setUp() throws IOException {
         when(processor.process(anyString())).thenReturn(true);
         when(offsetManager.getLastOffset(anyString())).thenReturn(0L);
         doNothing().when(offsetManager).commitOffset(anyString(), anyLong());
 
-        pathReader = new PathReader(folderPath, fileFormat, processor, offsetManager);
+        pathReader = new PathReader(folderPath, fileFormat, processor, offsetManager, ONE_PASS_ONLY);
     }
 
     @Test
-    public void testThatAllFilesInFolderAreProcessed() throws IOException {
+    public void testThatAllFilesInFolderAreProcessed() throws IOException, InterruptedException {
         pathReader.processPath();
 
         verify(processor, times(18)).process(anyString());
@@ -70,7 +79,7 @@ public class PathReaderTest {
     }
 
     @Test
-    public void testThatItCanHandleOffsets() throws IOException {
+    public void testThatItCanHandleOffsets() throws IOException, InterruptedException {
         String file1 = TestingUtils.getResourcePath("example-1/example.txt");
         String file2 = TestingUtils.getResourcePath("example-1/example-2.txt");
         String file3 = TestingUtils.getResourcePath("example-1/example-3.txt");
@@ -83,7 +92,7 @@ public class PathReaderTest {
         when(offsetManager.getLastOffset(file4)).thenReturn(1000L);
         when(offsetManager.getLastOffset(file5)).thenReturn(1000L);
 
-
+        pathReader = new PathReader(folderPath, fileFormat, processor, offsetManager, ONE_PASS_ONLY);
         pathReader.processPath();
 
         verify(processor, times(7)).process(anyString());
@@ -98,9 +107,9 @@ public class PathReaderTest {
     }
 
     @Test
-    public void testThatFilenameFilterWorks() throws IOException {
+    public void testThatFilenameFilterWorks() throws IOException, InterruptedException {
         String txtFileFormat = "*.txt";
-        pathReader = new PathReader(folderPath, txtFileFormat, processor, offsetManager);
+        pathReader = new PathReader(folderPath, txtFileFormat, processor, offsetManager, ONE_PASS_ONLY);
 
         pathReader.processPath();
 
@@ -122,7 +131,7 @@ public class PathReaderTest {
         reset(processor);
         String number4FileFormat = "*4*";
 
-        pathReader = new PathReader(folderPath, number4FileFormat, processor, offsetManager);
+        pathReader = new PathReader(folderPath, number4FileFormat, processor, offsetManager, ONE_PASS_ONLY);
 
         pathReader.processPath();
 
@@ -138,10 +147,10 @@ public class PathReaderTest {
     }
 
     @Test
-    public void testThatSubfoldersAreProcessedCorrectly() throws IOException {
+    public void testThatSubfoldersAreProcessedCorrectly() throws IOException, InterruptedException {
         String doubleStarPath = TestingUtils.getResourcePath("example-1").replace("/example-1", "**");
         String txtFileFormat = "*.txt";
-        pathReader = new PathReader(doubleStarPath, txtFileFormat, processor, offsetManager);
+        pathReader = new PathReader(doubleStarPath, txtFileFormat, processor, offsetManager, ONE_PASS_ONLY);
 
         pathReader.processPath();
 
@@ -167,6 +176,52 @@ public class PathReaderTest {
         verify(processor, times(1)).process("105");
     }
 
+    @Test
+    public void testThatDataAddedAfterFirstPassIsProcessed() throws InterruptedException, IOException {
+        String doubleStarPath = TestingUtils.getResourcePath("example-1").replace("/example-1", "**");
+        String txtFileFormat = "example-4*";
+        pathReader = new PathReader(doubleStarPath, txtFileFormat, processor, offsetManager, WATCH_FILES);
 
+        String valueToAppend = "1000";
+
+        new Thread(() -> {
+            try {
+                pathReader.processPath();
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }).start();
+
+        Thread.sleep(100); // sleep to make sure that the files have been processed once
+        verify(processor, times(8)).process(anyString());
+        verify(processor, times(0)).process(valueToAppend);
+
+        appendOneLineToFile("example-1", "example-4", valueToAppend);
+        Thread.sleep(1500); // sleep for enough time to process again
+        removeLastLineFromFile("example-1", "example-4");
+        verify(processor, times(9)).process(anyString());
+        verify(processor, times(1)).process(valueToAppend);
+
+        pathReader.stop();
+    }
+
+    private void appendOneLineToFile(String path, String filename, String data) throws IOException {
+        String file = TestingUtils.getResourcePath(path + "/" + filename);
+        Files.write(Paths.get(file), data.getBytes(), StandardOpenOption.APPEND);
+    }
+
+    private void removeLastLineFromFile(String path, String filename) throws IOException {
+        String file = TestingUtils.getResourcePath(path + "/" + filename);
+        RandomAccessFile f = new RandomAccessFile(file, "rw");
+        long length = f.length() - 1;
+        byte b;
+        do {
+            length -= 1;
+            f.seek(length);
+            b = f.readByte();
+        } while(b != 10);
+        f.setLength(length+1);
+        f.close();
+    }
 
 }
