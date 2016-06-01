@@ -46,7 +46,6 @@ public class PathReader {
                     processFolder(file.getPath());
                 }
             }
-            processor.close();
         }
     }
 

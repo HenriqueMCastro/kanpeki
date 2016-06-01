@@ -28,6 +28,7 @@ public class ProcessFiles {
         }
 
         new PathReader(path, fileFormat, processor, offsetManager).processPath();
+        processor.close();
     }
 
 }
