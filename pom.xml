@@ -4,7 +4,7 @@
 
     <groupId>com.github.henriquemcastro</groupId>
     <artifactId>kanpeki</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 
     <description>Lightweight library for parsing log files</description>
 
@@ -68,6 +68,11 @@
             <groupId>org.mapdb</groupId>
             <artifactId>mapdb</artifactId>
             <version>3.0.0-M6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
         </dependency>
         <!--TEST-->
         <dependency>
