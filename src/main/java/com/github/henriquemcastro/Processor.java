@@ -11,4 +11,9 @@ public interface Processor {
      * @return Wether or not to commit the file position offset to disk
      */
     boolean process(String record);
+
+    /**
+     * Called when all files have been processed
+     */
+    void close();
 }

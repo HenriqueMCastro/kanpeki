@@ -43,6 +43,7 @@ public class RecordReader {
                 }
             }
         }
+        processor.close();
     }
 
     private long getStartOffset(){
