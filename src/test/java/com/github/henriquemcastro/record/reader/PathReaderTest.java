@@ -46,7 +46,7 @@ public class PathReaderTest {
 
     @Before
     public void setUp() throws IOException {
-        when(processor.process(anyString())).thenReturn(true);
+        when(processor.process(anyString(), anyString())).thenReturn(true);
         when(offsetManager.getLastOffset(anyString())).thenReturn(0L);
         doNothing().when(offsetManager).commitOffset(anyString(), anyLong());
 
@@ -57,24 +57,24 @@ public class PathReaderTest {
     public void testThatAllFilesInFolderAreProcessed() throws IOException, InterruptedException {
         pathReader.processPath();
 
-        verify(processor, times(18)).process(anyString());
-        verify(processor, times(1)).process("1");
-        verify(processor, times(1)).process("2");
-        verify(processor, times(1)).process("3");
-        verify(processor, times(1)).process("4");
-        verify(processor, times(1)).process("5");
-        verify(processor, times(1)).process("6");
-        verify(processor, times(1)).process("7");
-        verify(processor, times(1)).process("8");
-        verify(processor, times(1)).process("9");
-        verify(processor, times(1)).process("20");
-        verify(processor, times(1)).process("21");
-        verify(processor, times(1)).process("22");
-        verify(processor, times(1)).process("23");
-        verify(processor, times(1)).process("24");
-        verify(processor, times(1)).process("30");
-        verify(processor, times(1)).process("31");
-        verify(processor, times(1)).process("32");
+        verify(processor, times(18)).process(anyString(), anyString());
+        verify(processor, times(1)).process("1", "example.txt");
+        verify(processor, times(1)).process("2", "example.txt");
+        verify(processor, times(1)).process("3", "example.txt");
+        verify(processor, times(1)).process("4", "example.txt");
+        verify(processor, times(1)).process("5", "example.txt");
+        verify(processor, times(1)).process("6", "example-2.txt");
+        verify(processor, times(1)).process("7", "example-2.txt");
+        verify(processor, times(1)).process("8", "example-2.txt");
+        verify(processor, times(1)).process("9", "example-3.txt");
+        verify(processor, times(1)).process("20", "example-4");
+        verify(processor, times(1)).process("21", "example-4");
+        verify(processor, times(1)).process("22", "example-4");
+        verify(processor, times(1)).process("23", "example-4");
+        verify(processor, times(1)).process("24", "example-4");
+        verify(processor, times(1)).process("30", "example-44.txt");
+        verify(processor, times(1)).process("31", "example-44.txt");
+        verify(processor, times(1)).process("32", "example-44.txt");
 
     }
 
@@ -95,14 +95,14 @@ public class PathReaderTest {
         pathReader = new PathReader(folderPath, fileFormat, processor, offsetManager, ONE_PASS_ONLY);
         pathReader.processPath();
 
-        verify(processor, times(7)).process(anyString());
-        verify(processor, times(1)).process("2");
-        verify(processor, times(1)).process("3");
-        verify(processor, times(1)).process("4");
-        verify(processor, times(1)).process("5");
-        verify(processor, times(1)).process("8");
-        verify(processor, times(1)).process("9");
-        verify(processor, times(1)).process("10");
+        verify(processor, times(7)).process(anyString(), anyString());
+        verify(processor, times(1)).process("2", "example.txt");
+        verify(processor, times(1)).process("3", "example.txt");
+        verify(processor, times(1)).process("4", "example.txt");
+        verify(processor, times(1)).process("5", "example.txt");
+        verify(processor, times(1)).process("8", "example-2.txt");
+        verify(processor, times(1)).process("9", "example-3.txt");
+        verify(processor, times(1)).process("10", "example-3.txt");
 
     }
 
@@ -113,20 +113,20 @@ public class PathReaderTest {
 
         pathReader.processPath();
 
-        verify(processor, times(13)).process(anyString());
-        verify(processor, times(1)).process("1");
-        verify(processor, times(1)).process("2");
-        verify(processor, times(1)).process("3");
-        verify(processor, times(1)).process("4");
-        verify(processor, times(1)).process("5");
-        verify(processor, times(1)).process("6");
-        verify(processor, times(1)).process("7");
-        verify(processor, times(1)).process("8");
-        verify(processor, times(1)).process("9");
-        verify(processor, times(1)).process("10");
-        verify(processor, times(1)).process("30");
-        verify(processor, times(1)).process("31");
-        verify(processor, times(1)).process("2");
+        verify(processor, times(13)).process(anyString(), anyString());
+        verify(processor, times(1)).process("1", "example.txt");
+        verify(processor, times(1)).process("2", "example.txt");
+        verify(processor, times(1)).process("3", "example.txt");
+        verify(processor, times(1)).process("4", "example.txt");
+        verify(processor, times(1)).process("5", "example.txt");
+        verify(processor, times(1)).process("6", "example-2.txt");
+        verify(processor, times(1)).process("7", "example-2.txt");
+        verify(processor, times(1)).process("8", "example-2.txt");
+        verify(processor, times(1)).process("9", "example-3.txt");
+        verify(processor, times(1)).process("10", "example-3.txt");
+        verify(processor, times(1)).process("30", "example-44.txt");
+        verify(processor, times(1)).process("31", "example-44.txt");
+        verify(processor, times(1)).process("2", "example.txt");
 
         reset(processor);
         String number4FileFormat = "*4*";
@@ -135,15 +135,15 @@ public class PathReaderTest {
 
         pathReader.processPath();
 
-        verify(processor, times(8)).process(anyString());
-        verify(processor, times(1)).process("20");
-        verify(processor, times(1)).process("21");
-        verify(processor, times(1)).process("22");
-        verify(processor, times(1)).process("23");
-        verify(processor, times(1)).process("24");
-        verify(processor, times(1)).process("30");
-        verify(processor, times(1)).process("31");
-        verify(processor, times(1)).process("32");
+        verify(processor, times(8)).process(anyString(), anyString());
+        verify(processor, times(1)).process("20", "example-4");
+        verify(processor, times(1)).process("21", "example-4");
+        verify(processor, times(1)).process("22", "example-4");
+        verify(processor, times(1)).process("23", "example-4");
+        verify(processor, times(1)).process("24", "example-4");
+        verify(processor, times(1)).process("30", "example-44.txt");
+        verify(processor, times(1)).process("31", "example-44.txt");
+        verify(processor, times(1)).process("32", "example-44.txt");
     }
 
     @Test
@@ -154,26 +154,26 @@ public class PathReaderTest {
 
         pathReader.processPath();
 
-        verify(processor, times(19)).process(anyString());
-        verify(processor, times(1)).process("1");
-        verify(processor, times(1)).process("2");
-        verify(processor, times(1)).process("3");
-        verify(processor, times(1)).process("4");
-        verify(processor, times(1)).process("5");
-        verify(processor, times(1)).process("6");
-        verify(processor, times(1)).process("7");
-        verify(processor, times(1)).process("8");
-        verify(processor, times(1)).process("9");
-        verify(processor, times(1)).process("10");
-        verify(processor, times(1)).process("30");
-        verify(processor, times(1)).process("31");
-        verify(processor, times(1)).process("32");
-        verify(processor, times(1)).process("100");
-        verify(processor, times(1)).process("101");
-        verify(processor, times(1)).process("102");
-        verify(processor, times(1)).process("103");
-        verify(processor, times(1)).process("104");
-        verify(processor, times(1)).process("105");
+        verify(processor, times(19)).process(anyString(), anyString());
+        verify(processor, times(1)).process("1", "example.txt");
+        verify(processor, times(1)).process("2", "example.txt");
+        verify(processor, times(1)).process("3", "example.txt");
+        verify(processor, times(1)).process("4", "example.txt");
+        verify(processor, times(1)).process("5", "example.txt");
+        verify(processor, times(1)).process("6", "example-2.txt");
+        verify(processor, times(1)).process("7", "example-2.txt");
+        verify(processor, times(1)).process("8", "example-2.txt");
+        verify(processor, times(1)).process("9", "example-3.txt");
+        verify(processor, times(1)).process("10", "example-3.txt");
+        verify(processor, times(1)).process("30", "example-44.txt");
+        verify(processor, times(1)).process("31", "example-44.txt");
+        verify(processor, times(1)).process("32", "example-44.txt");
+        verify(processor, times(1)).process("100", "example5.txt");
+        verify(processor, times(1)).process("101", "example5.txt");
+        verify(processor, times(1)).process("102", "example5.txt");
+        verify(processor, times(1)).process("103", "example5.txt");
+        verify(processor, times(1)).process("104", "example5.txt");
+        verify(processor, times(1)).process("105", "example5.txt");
     }
 
     @Test
@@ -193,14 +193,14 @@ public class PathReaderTest {
         }).start();
 
         Thread.sleep(100); // sleep to make sure that the files have been processed once
-        verify(processor, times(8)).process(anyString());
-        verify(processor, times(0)).process(valueToAppend);
+        verify(processor, times(8)).process(anyString(), anyString());
+        verify(processor, times(0)).process(valueToAppend, "example-4");
 
         appendOneLineToFile("example-1", "example-4", valueToAppend);
         Thread.sleep(1500); // sleep for enough time to process again
         removeLastLineFromFile("example-1", "example-4");
-        verify(processor, times(9)).process(anyString());
-        verify(processor, times(1)).process(valueToAppend);
+        verify(processor, times(9)).process(anyString(), anyString());
+        verify(processor, times(1)).process(valueToAppend, "example-4");
 
         pathReader.stop();
     }

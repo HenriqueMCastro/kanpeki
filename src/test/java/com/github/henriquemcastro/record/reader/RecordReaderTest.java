@@ -23,7 +23,9 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class RecordReaderTest {
 
-    private final String filePath = TestingUtils.getResourcePath("example-1/example.txt");
+    private final String filename = "example.txt";
+
+    private final String filePath = TestingUtils.getResourcePath("example-1/" + filename);
 
 
     @Mock
@@ -36,7 +38,7 @@ public class RecordReaderTest {
 
     @Before
     public void setUp(){
-        when(processor.process(anyString())).thenReturn(true);
+        when(processor.process(anyString(), anyString())).thenReturn(true);
         when(offsetManager.getLastOffset(filePath)).thenReturn(0L);
         doNothing().when(offsetManager).commitOffset(anyString(), anyLong());
 
@@ -47,18 +49,18 @@ public class RecordReaderTest {
     public void testThatProcessorIsCalled() throws IOException {
         recordReader.processFile();
 
-        verify(processor, times(5)).process(anyString());
+        verify(processor, times(5)).process(anyString(), anyString());
     }
 
     @Test
     public void testThatProcessorIsCalledWithTheRightRecords() throws IOException {
         recordReader.processFile();
 
-        verify(processor, times(1)).process("1");
-        verify(processor, times(1)).process("2");
-        verify(processor, times(1)).process("3");
-        verify(processor, times(1)).process("4");
-        verify(processor, times(1)).process("5");
+        verify(processor, times(1)).process("1", filename);
+        verify(processor, times(1)).process("2", filename);
+        verify(processor, times(1)).process("3", filename);
+        verify(processor, times(1)).process("4", filename);
+        verify(processor, times(1)).process("5", filename);
     }
 
     @Test
@@ -66,11 +68,11 @@ public class RecordReaderTest {
         recordReader.processFile();
 
         InOrder inOrder = inOrder(processor, processor, processor, processor, processor);
-        inOrder.verify(processor).process("1");
-        inOrder.verify(processor).process("2");
-        inOrder.verify(processor).process("3");
-        inOrder.verify(processor).process("4");
-        inOrder.verify(processor).process("5");
+        inOrder.verify(processor).process("1", filename);
+        inOrder.verify(processor).process("2", filename);
+        inOrder.verify(processor).process("3", filename);
+        inOrder.verify(processor).process("4", filename);
+        inOrder.verify(processor).process("5", filename);
     }
 
     @Test
@@ -81,12 +83,12 @@ public class RecordReaderTest {
         recordReader = new RecordReader(filePath, processor, offsetManager);
         recordReader.processFile();
 
-        verify(processor, times(4)).process(anyString());
+        verify(processor, times(4)).process(anyString(), anyString());
         InOrder inOrder = inOrder(processor, processor, processor, processor);
-        inOrder.verify(processor).process("2");
-        inOrder.verify(processor).process("3");
-        inOrder.verify(processor).process("4");
-        inOrder.verify(processor).process("5");
+        inOrder.verify(processor).process("2", filename);
+        inOrder.verify(processor).process("3", filename);
+        inOrder.verify(processor).process("4", filename);
+        inOrder.verify(processor).process("5", filename);
     }
 
 }
