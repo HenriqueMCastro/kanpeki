@@ -4,7 +4,7 @@
 
     <groupId>com.github.henriquemcastro</groupId>
     <artifactId>kanpeki</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
 
     <description>Lightweight library for parsing log files</description>
 

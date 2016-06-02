@@ -38,7 +38,7 @@ public class RecordReaderTest {
 
     @Before
     public void setUp(){
-        when(processor.process(anyString(), anyString())).thenReturn(true);
+        when(processor.process(anyString(), anyString())).thenReturn(Processor.Offset.COMMIT);
         when(offsetManager.getLastOffset(filePath)).thenReturn(0L);
         doNothing().when(offsetManager).commitOffset(anyString(), anyLong());
 

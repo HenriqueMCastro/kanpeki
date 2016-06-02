@@ -43,8 +43,8 @@ public class RecordReader {
             randomAccessFile.seek(startOffset);
             String line;
             while ((line = randomAccessFile.readLine()) != null) {
-                boolean commitOffset = processor.process(line, file.getName());
-                if (commitOffset) {
+                Processor.Offset commitOffset = processor.process(line, file.getName());
+                if (Processor.Offset.COMMIT.equals(commitOffset)) {
                     offsetManager.commitOffset(filePath, randomAccessFile.getFilePointer());
                 }
             }

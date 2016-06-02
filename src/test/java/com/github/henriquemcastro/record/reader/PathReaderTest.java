@@ -46,7 +46,7 @@ public class PathReaderTest {
 
     @Before
     public void setUp() throws IOException {
-        when(processor.process(anyString(), anyString())).thenReturn(true);
+        when(processor.process(anyString(), anyString())).thenReturn(Processor.Offset.COMMIT);
         when(offsetManager.getLastOffset(anyString())).thenReturn(0L);
         doNothing().when(offsetManager).commitOffset(anyString(), anyLong());
 
@@ -129,6 +129,7 @@ public class PathReaderTest {
         verify(processor, times(1)).process("2", "example.txt");
 
         reset(processor);
+        when(processor.process(anyString(), anyString())).thenReturn(Processor.Offset.COMMIT);
         String number4FileFormat = "*4*";
 
         pathReader = new PathReader(folderPath, number4FileFormat, processor, offsetManager, ONE_PASS_ONLY);
