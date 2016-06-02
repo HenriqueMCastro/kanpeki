@@ -8,7 +8,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -22,7 +24,7 @@ public class PathReader {
     private final String fileFormat;
     private final PathMatcher pathMatcher;
     private Processor processor;
-    private final List<RecordReader> fileProcessors;
+    private final Map<String, RecordReader> fileProcessors;
     private volatile boolean isStopped = false;
 
 
@@ -32,9 +34,8 @@ public class PathReader {
         this.processor = processor;
         this.offsetManager = offsetManager;
         this.onePassOnly = onePassOnly;
-        this.fileProcessors = new ArrayList<>();
+        this.fileProcessors = new HashMap();
         pathMatcher = FileSystems.getDefault().getPathMatcher("glob:" + path + "/" + fileFormat);
-        findFiles(removeStarsFromPath(path));
     }
 
     private void findFiles(String folderPath) throws IOException {
@@ -44,7 +45,10 @@ public class PathReader {
             for (int i = 0; i < listOfFiles.length; i++) {
                 File file = listOfFiles[i];
                 if (file.isFile() && pathMatcher.matches(Paths.get(file.toString()))) {
-                    fileProcessors.add(new RecordReader(file.toString(), processor, offsetManager));
+                    String fileAbsolutePath = file.getAbsolutePath();
+                    if(!fileProcessors.containsKey(fileAbsolutePath)) {
+                        fileProcessors.put(fileAbsolutePath, new RecordReader(file.toString(), processor, offsetManager));
+                    }
                 } else if (file.isDirectory()) {
                     findFiles(file.getPath());
                 }
@@ -74,7 +78,8 @@ public class PathReader {
     }
 
     private void process() throws IOException {
-        for (RecordReader fileProcessor : fileProcessors) {
+        findFiles(removeStarsFromPath(path));
+        for (RecordReader fileProcessor : fileProcessors.values()) {
             fileProcessor.processFile();
         }
     }
