@@ -39,11 +39,13 @@ public class RecordReader {
     public void processFile() throws IOException {
         LOG.info("Going to process file " + filePath + ". Starting offset = " + startOffset);
         File file = new File(filePath);
+        String fileName = file.getName();
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
             randomAccessFile.seek(startOffset);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(randomAccessFile.getFD())));
             String line;
-            while ((line = randomAccessFile.readLine()) != null) {
-                Processor.Offset commitOffset = processor.process(line, file.getName());
+            while ((line = bufferedReader.readLine()) != null) {
+                Processor.Offset commitOffset = processor.process(line, fileName);
                 if (Processor.Offset.COMMIT.equals(commitOffset)) {
                     offsetManager.commitOffset(filePath, randomAccessFile.getFilePointer());
                 }
