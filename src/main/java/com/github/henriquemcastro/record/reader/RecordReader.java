@@ -37,7 +37,6 @@ public class RecordReader {
     }
 
     public void processFile() throws IOException {
-        LOG.info("Going to process file " + filePath + ". Starting offset = " + startOffset);
         File file = new File(filePath);
         String fileName = file.getName();
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
