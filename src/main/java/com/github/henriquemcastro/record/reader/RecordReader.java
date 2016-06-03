@@ -51,7 +51,7 @@ public class RecordReader {
             }
             long endOffset = randomAccessFile.getFilePointer();
             if(endOffset != startOffset) {
-                LOG.info("Processed from " + startOffset + " to " + endOffset + " + for file " + filePath);
+                LOG.info("Processed " + (endOffset - startOffset) + " bytes (" + startOffset + " to " + endOffset + ") for file " + filePath);
                 startOffset = endOffset;
             }
         }
