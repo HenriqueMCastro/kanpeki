@@ -42,16 +42,18 @@ public class RecordReader {
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
             randomAccessFile.seek(startOffset);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(randomAccessFile.getFD())));
+            int numOfMessages = 0;
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 Processor.Offset commitOffset = processor.process(line, fileName);
                 if (Processor.Offset.COMMIT.equals(commitOffset)) {
                     offsetManager.commitOffset(filePath, randomAccessFile.getFilePointer());
                 }
+                numOfMessages++;
             }
             long endOffset = randomAccessFile.getFilePointer();
             if(endOffset != startOffset) {
-                LOG.info("Processed " + (endOffset - startOffset) + " bytes (" + startOffset + " to " + endOffset + ") for file " + filePath);
+                LOG.info("Processed {} messages with {} ({} to {}) for file {}", numOfMessages, humanReadableByteCount(endOffset - startOffset), startOffset, endOffset, filePath);
                 startOffset = endOffset;
             }
             return ExitStatus.OK;
@@ -68,6 +70,14 @@ public class RecordReader {
 
     private long getStartOffset(){
         return offsetManager.getLastOffset(filePath);
+    }
+
+    public static String humanReadableByteCount(long bytes) {
+        int unit = 1024;
+        if (bytes < unit) return bytes + " B";
+        int exp = (int) (Math.log(bytes) / Math.log(unit));
+        String pre = ("KMGTPE").charAt(exp-1) + ("i");
+        return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
     public enum ExitStatus{
