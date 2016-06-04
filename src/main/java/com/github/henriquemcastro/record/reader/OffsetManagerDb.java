@@ -4,6 +4,8 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -13,6 +15,8 @@ import java.util.Map;
  * Created by hcastro on 29/05/16.
  */
 public class OffsetManagerDb implements OffsetManager {
+
+    private static final Logger LOG = LoggerFactory.getLogger(OffsetManagerDb.class);
 
     private static final String OFFSET_MAP_NAME = "offsets";
 
@@ -41,8 +45,12 @@ public class OffsetManagerDb implements OffsetManager {
 
     @Override
     public synchronized void commitOffsets() {
+        LOG.debug("Committing offsets");
         for(Map.Entry<String, Long> entry : memoryMap.entrySet()){
             diskMap.put(entry.getKey(), entry.getValue());
+            if(LOG.isTraceEnabled()){
+                LOG.trace("Committing offset {} for file {}", entry.getValue(), entry.getKey());
+            }
         }
         offsetDb.commit();
     }
