@@ -40,8 +40,8 @@ public class RecordReaderTest {
     @Before
     public void setUp(){
         when(processor.process(anyString(), anyString())).thenReturn(Processor.Offset.COMMIT);
-        when(offsetManager.getLastOffset(filePath)).thenReturn(0L);
-        doNothing().when(offsetManager).commitOffset(anyString(), anyLong());
+        when(offsetManager.getLastInMemoryOffset(filePath)).thenReturn(0L);
+        doNothing().when(offsetManager).addOffset(anyString(), anyLong());
 
         recordReader = new RecordReader(filePath, processor, offsetManager);
     }
@@ -79,7 +79,7 @@ public class RecordReaderTest {
     @Test
     public void testThatRecordReaderCanStartFromOffset() throws IOException {
         long offset = 2L; // 2nd line
-        when(offsetManager.getLastOffset(filePath)).thenReturn(offset);
+        when(offsetManager.getLastInMemoryOffset(filePath)).thenReturn(offset);
 
         recordReader = new RecordReader(filePath, processor, offsetManager);
         recordReader.processFile();

@@ -47,8 +47,8 @@ public class PathReaderTest {
     @Before
     public void setUp() throws IOException {
         when(processor.process(anyString(), anyString())).thenReturn(Processor.Offset.COMMIT);
-        when(offsetManager.getLastOffset(anyString())).thenReturn(0L);
-        doNothing().when(offsetManager).commitOffset(anyString(), anyLong());
+        when(offsetManager.getLastInMemoryOffset(anyString())).thenReturn(0L);
+        doNothing().when(offsetManager).addOffset(anyString(), anyLong());
 
         pathReader = new PathReader(folderPath, fileFormat, processor, offsetManager, ONE_PASS_ONLY);
     }
@@ -86,11 +86,11 @@ public class PathReaderTest {
         String file4 = TestingUtils.getResourcePath("example-1/example-4");
         String file5 = TestingUtils.getResourcePath("example-1/example-44.txt");
 
-        when(offsetManager.getLastOffset(file1)).thenReturn(2L);
-        when(offsetManager.getLastOffset(file2)).thenReturn(4L);
-        when(offsetManager.getLastOffset(file3)).thenReturn(0L);
-        when(offsetManager.getLastOffset(file4)).thenReturn(1000L);
-        when(offsetManager.getLastOffset(file5)).thenReturn(1000L);
+        when(offsetManager.getLastInMemoryOffset(file1)).thenReturn(2L);
+        when(offsetManager.getLastInMemoryOffset(file2)).thenReturn(4L);
+        when(offsetManager.getLastInMemoryOffset(file3)).thenReturn(0L);
+        when(offsetManager.getLastInMemoryOffset(file4)).thenReturn(1000L);
+        when(offsetManager.getLastInMemoryOffset(file5)).thenReturn(1000L);
 
         pathReader = new PathReader(folderPath, fileFormat, processor, offsetManager, ONE_PASS_ONLY);
         pathReader.processPath();

@@ -26,11 +26,18 @@ public class OffsetManagerDbTest {
         try{
             checkThatDbDoesNotExist();
             offsetManagerDb = new OffsetManagerDb((DB_NAME));
-            offsetManagerDb.commitOffset(resourcePath, offset);
+            offsetManagerDb.addOffset(resourcePath, offset);
             offsetManagerDb.close();
 
             offsetManagerDb = new OffsetManagerDb(DB_NAME);
-            long lastOffset = offsetManagerDb.getLastOffset(resourcePath);
+            long lastOffset = offsetManagerDb.getLastInMemoryOffset(resourcePath);
+            assertEquals(0, lastOffset);
+            offsetManagerDb.addOffset(resourcePath, offset);
+            offsetManagerDb.commitOffsets();
+            offsetManagerDb.close();
+
+            offsetManagerDb = new OffsetManagerDb(DB_NAME);
+            lastOffset = offsetManagerDb.getLastInMemoryOffset(resourcePath);
             assertEquals(offset, lastOffset);
 
         }
@@ -41,18 +48,30 @@ public class OffsetManagerDbTest {
 
     @Test
     public void testThatOffsetsCanBeUpdated(){
-        String filePath = "example-1/example.txt";
-        String resourcePath = TestingUtils.getResourcePath(filePath);
+        String filePath1 = "example-1/example.txt";
+        String filePath2 = "example-1/example-2.txt";
+        String resourcePath1 = TestingUtils.getResourcePath(filePath1);
+        String resourcePath2 = TestingUtils.getResourcePath(filePath2);
         long offset1 = 6;
         long offset2 = 12;
+        long offset3 = 20;
         try{
             checkThatDbDoesNotExist();
             offsetManagerDb = new OffsetManagerDb((DB_NAME));
-            offsetManagerDb.commitOffset(resourcePath, offset1);
-            assertEquals(offsetManagerDb.getLastOffset(resourcePath), offset1);
+            offsetManagerDb.addOffset(resourcePath1, offset1);
+            assertEquals(offsetManagerDb.getLastInMemoryOffset(resourcePath1), offset1);
+            assertEquals(offsetManagerDb.getLastCommittedOffset(resourcePath1), 0);
+            offsetManagerDb.addOffset(resourcePath1, offset2);
+            assertEquals(offsetManagerDb.getLastInMemoryOffset(resourcePath1), offset2);
+            assertEquals(offsetManagerDb.getLastCommittedOffset(resourcePath1), 0);
 
-            offsetManagerDb.commitOffset(resourcePath, offset2);
-            assertEquals(offsetManagerDb.getLastOffset(resourcePath), offset2);
+            offsetManagerDb.addOffset(resourcePath2, offset3);
+            assertEquals(offsetManagerDb.getLastInMemoryOffset(resourcePath2), offset3);
+            assertEquals(offsetManagerDb.getLastCommittedOffset(resourcePath2), 0);
+
+            offsetManagerDb.commitOffsets();
+            assertEquals(offsetManagerDb.getLastCommittedOffset(resourcePath1), offset2);
+            assertEquals(offsetManagerDb.getLastCommittedOffset(resourcePath2), offset3);
         }
         finally {
             deleteDb();

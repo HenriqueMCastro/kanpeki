@@ -46,8 +46,9 @@ public class RecordReader {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 Processor.Offset commitOffset = processor.process(line, fileName);
+                offsetManager.addOffset(fileName, randomAccessFile.getFilePointer());
                 if (Processor.Offset.COMMIT.equals(commitOffset)) {
-                    offsetManager.commitOffset(filePath, randomAccessFile.getFilePointer());
+                    offsetManager.commitOffsets();
                 }
                 numOfMessages++;
             }
@@ -69,7 +70,7 @@ public class RecordReader {
     }
 
     private long getStartOffset(){
-        return offsetManager.getLastOffset(filePath);
+        return offsetManager.getLastInMemoryOffset(filePath);
     }
 
     public static String humanReadableByteCount(long bytes) {

@@ -6,12 +6,22 @@ package com.github.henriquemcastro.record.reader;
 public class OffsetManagerNoOp implements OffsetManager {
 
     @Override
-    public void commitOffset(String filePath, long offset) {
+    public void addOffset(String filePath, long offset) {
         // do nothing
     }
 
     @Override
-    public long getLastOffset(String filePath) {
+    public void commitOffsets() {
+        // do nothing
+    }
+
+    @Override
+    public long getLastInMemoryOffset(String filePath) {
+        return 0;
+    }
+
+    @Override
+    public long getLastCommittedOffset(String filePath) {
         return 0;
     }
 }

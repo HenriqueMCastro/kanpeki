@@ -5,8 +5,12 @@ package com.github.henriquemcastro.record.reader;
  */
 public interface OffsetManager {
 
-    void commitOffset(String filePath, long offset);
+    void addOffset(String filePath, long offset);
 
-    long getLastOffset(String filePath);
+    void commitOffsets();
+
+    long getLastInMemoryOffset(String filePath);
+
+    long getLastCommittedOffset(String filePath);
 
 }

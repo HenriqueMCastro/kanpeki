@@ -5,8 +5,9 @@ import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 
-import java.io.File;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by hcastro on 29/05/16.
@@ -15,25 +16,49 @@ public class OffsetManagerDb implements OffsetManager {
 
     private static final String OFFSET_MAP_NAME = "offsets";
 
-    private final HTreeMap<String, Long> offsetMap;
+    private final Map<String, Long> memoryMap;
+    private final HTreeMap<String, Long> diskMap;
     private final DB offsetDb;
 
     public OffsetManagerDb(String dbPath){
         makeDirIfItDoesntExist(dbPath);
-        offsetDb = DBMaker.fileDB(dbPath).closeOnJvmShutdown().make();
-        offsetMap = offsetDb.hashMap(OFFSET_MAP_NAME, Serializer.STRING, Serializer.LONG).createOrOpen();
+        offsetDb = DBMaker.fileDB(dbPath). closeOnJvmShutdown().make();
+        diskMap = offsetDb.hashMap(OFFSET_MAP_NAME, Serializer.STRING, Serializer.LONG).createOrOpen();
+        memoryMap = new HashMap<>();
+        updateInMemoryMapFromInDiskMap();
+    }
+
+    private void updateInMemoryMapFromInDiskMap(){
+        for(Object key : diskMap.keySet()){
+            memoryMap.put(String.valueOf(key), diskMap.get(String.valueOf(key)));
+        }
     }
 
     @Override
-    public synchronized void commitOffset(String filePath, long offset) {
-        offsetMap.put(filePath, offset);
+    public synchronized void addOffset(String filePath, long offset){
+        memoryMap.put(filePath, offset);
+    }
+
+    @Override
+    public synchronized void commitOffsets() {
+        for(Map.Entry<String, Long> entry : memoryMap.entrySet()){
+            diskMap.put(entry.getKey(), entry.getValue());
+        }
         offsetDb.commit();
     }
 
     @Override
-    public synchronized long getLastOffset(String filePath) {
-        if(offsetMap.containsKey(filePath)){
-            return offsetMap.get(filePath);
+    public synchronized long getLastInMemoryOffset(String filePath) {
+        if(memoryMap.containsKey(filePath)){
+            return memoryMap.get(filePath);
+        }
+        return 0;
+    }
+
+    @Override
+    public long getLastCommittedOffset(String filePath) {
+        if(diskMap.containsKey(filePath)){
+            return diskMap.get(filePath);
         }
         return 0;
     }
