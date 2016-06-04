@@ -13,4 +13,6 @@ public interface OffsetManager {
 
     long getLastCommittedOffset(String filePath);
 
+    void close();
+
 }

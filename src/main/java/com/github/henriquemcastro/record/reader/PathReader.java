@@ -61,7 +61,7 @@ public class PathReader {
             process();
         }
         else{
-            while(!isStopped){
+            while(!isStopped || Thread.interrupted()){
                 process();
                 Thread.sleep(1000);
             }

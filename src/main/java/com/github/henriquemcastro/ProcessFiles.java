@@ -29,6 +29,7 @@ public class ProcessFiles {
         boolean onePassOnly = Boolean.valueOf(properties.getProperty(KanpekiConfig.ONE_PASS_ONLY_ENABLED, KanpekiConfig.ONE_PASS_ONLY_ENABLED_DEFAULT));
 
         new PathReader(path, fileFormat, processor, offsetManager, onePassOnly).processPath();
+        offsetManager.close();
         processor.close();
     }
 

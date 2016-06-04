@@ -71,6 +71,7 @@ public class OffsetManagerDb implements OffsetManager {
         return 0;
     }
 
+    @Override
     public void close(){
         offsetDb.close();
     }

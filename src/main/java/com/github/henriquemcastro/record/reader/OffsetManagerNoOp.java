@@ -24,4 +24,9 @@ public class OffsetManagerNoOp implements OffsetManager {
     public long getLastCommittedOffset(String filePath) {
         return 0;
     }
+
+    @Override
+    public void close() {
+
+    }
 }
