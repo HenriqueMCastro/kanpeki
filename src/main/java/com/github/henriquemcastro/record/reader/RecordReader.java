@@ -44,13 +44,18 @@ public class RecordReader {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(randomAccessFile.getFD())));
             int numOfMessages = 0;
             String line;
-            while ((line = bufferedReader.readLine()) != null && !Thread.interrupted()) {
-                Processor.Offset commitOffset = processor.process(line, fileName);
-                offsetManager.addOffset(filePath, randomAccessFile.getFilePointer());
-                if (Processor.Offset.COMMIT.equals(commitOffset)) {
-                    offsetManager.commitOffsets();
+            while ((line = bufferedReader.readLine()) != null) {
+                if(!Thread.interrupted()){
+                    Processor.Offset commitOffset = processor.process(line, fileName);
+                    offsetManager.addOffset(filePath, randomAccessFile.getFilePointer());
+                    if (Processor.Offset.COMMIT.equals(commitOffset)) {
+                        offsetManager.commitOffsets();
+                    }
+                    numOfMessages++;
                 }
-                numOfMessages++;
+                else{
+                    Thread.currentThread().interrupt();
+                }
             }
             long endOffset = randomAccessFile.getFilePointer();
             if(endOffset != startOffset) {
