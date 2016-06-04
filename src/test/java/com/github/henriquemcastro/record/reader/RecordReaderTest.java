@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -89,6 +90,13 @@ public class RecordReaderTest {
         inOrder.verify(processor).process("3", filename);
         inOrder.verify(processor).process("4", filename);
         inOrder.verify(processor).process("5", filename);
+    }
+
+    @Test
+    public void testThatWhenFileDoesNotExistThenRightValueIsReturned() throws IOException {
+        recordReader = new RecordReader("nonExistingFilePath", processor, offsetManager);
+        RecordReader.ExitStatus exitStatus = recordReader.processFile();
+        assertEquals(RecordReader.ExitStatus.FILE_NO_LONGER_EXISTS, exitStatus);
     }
 
 }

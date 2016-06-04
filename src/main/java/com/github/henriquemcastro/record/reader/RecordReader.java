@@ -36,7 +36,7 @@ public class RecordReader {
         this(filePath, processor, new OffsetManagerNoOp());
     }
 
-    public void processFile() throws IOException {
+    public ExitStatus processFile() throws IOException {
         File file = new File(filePath);
         String fileName = file.getName();
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
@@ -54,14 +54,24 @@ public class RecordReader {
                 LOG.info("Processed " + (endOffset - startOffset) + " bytes (" + startOffset + " to " + endOffset + ") for file " + filePath);
                 startOffset = endOffset;
             }
+            return ExitStatus.OK;
         }
+        catch(FileNotFoundException e){
+            LOG.info("File {} no longer exists.", filePath);
+            return ExitStatus.FILE_NO_LONGER_EXISTS;
+        }
+    }
 
-
+    public String getFilePath(){
+        return filePath;
     }
 
     private long getStartOffset(){
         return offsetManager.getLastOffset(filePath);
     }
 
-
+    public enum ExitStatus{
+        OK,
+        FILE_NO_LONGER_EXISTS;
+    }
 }

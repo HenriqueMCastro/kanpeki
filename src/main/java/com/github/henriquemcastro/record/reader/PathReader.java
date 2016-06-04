@@ -70,7 +70,7 @@ public class PathReader {
     }
 
     /**
-     * Stop the path reader to keep on watching the files. It doesn't stop immediatly if it isn't in the middle of
+     * Stop the path reader to keep on watching the files. It doesn't stop immediately if it isn't in the middle of
      * processing the files.
      */
     public void stop(){
@@ -79,8 +79,18 @@ public class PathReader {
 
     private void process() throws IOException {
         findFiles(removeStarsFromPath(path));
+        List<RecordReader> fileProcessorsToRemove = null;
         for (RecordReader fileProcessor : fileProcessors.values()) {
-            fileProcessor.processFile();
+            RecordReader.ExitStatus exitStatus = fileProcessor.processFile();
+            if(RecordReader.ExitStatus.FILE_NO_LONGER_EXISTS.equals(exitStatus)){
+                if(fileProcessorsToRemove == null){
+                    fileProcessorsToRemove = new ArrayList<>();
+                }
+                fileProcessorsToRemove.add(fileProcessor);
+            }
+        }
+        if(fileProcessorsToRemove != null) {
+            fileProcessorsToRemove.stream().forEach(recordReader -> fileProcessors.remove(recordReader.getFilePath()));
         }
     }
 
