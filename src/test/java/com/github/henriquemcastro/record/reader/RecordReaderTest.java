@@ -47,14 +47,14 @@ public class RecordReaderTest {
     }
 
     @Test
-    public void testThatProcessorIsCalled() throws IOException {
+    public void testThatProcessorIsCalled() throws IOException, InterruptedException {
         recordReader.processFile();
 
         verify(processor, times(5)).process(anyString(), anyString());
     }
 
     @Test
-    public void testThatProcessorIsCalledWithTheRightRecords() throws IOException {
+    public void testThatProcessorIsCalledWithTheRightRecords() throws IOException, InterruptedException {
         recordReader.processFile();
 
         verify(processor, times(1)).process("1", filename);
@@ -65,7 +65,7 @@ public class RecordReaderTest {
     }
 
     @Test
-    public void testRecordsArePassedToTheProcessorInOrder() throws IOException {
+    public void testRecordsArePassedToTheProcessorInOrder() throws IOException, InterruptedException {
         recordReader.processFile();
 
         InOrder inOrder = inOrder(processor, processor, processor, processor, processor);
@@ -77,7 +77,7 @@ public class RecordReaderTest {
     }
 
     @Test
-    public void testThatRecordReaderCanStartFromOffset() throws IOException {
+    public void testThatRecordReaderCanStartFromOffset() throws IOException, InterruptedException {
         long offset = 2L; // 2nd line
         when(offsetManager.getLastInMemoryOffset(filePath)).thenReturn(offset);
 
@@ -93,7 +93,7 @@ public class RecordReaderTest {
     }
 
     @Test
-    public void testThatWhenFileDoesNotExistThenRightValueIsReturned() throws IOException {
+    public void testThatWhenFileDoesNotExistThenRightValueIsReturned() throws IOException, InterruptedException {
         recordReader = new RecordReader("nonExistingFilePath", processor, offsetManager);
         RecordReader.ExitStatus exitStatus = recordReader.processFile();
         assertEquals(RecordReader.ExitStatus.FILE_NO_LONGER_EXISTS, exitStatus);
