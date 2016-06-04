@@ -46,7 +46,7 @@ public class RecordReader {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 Processor.Offset commitOffset = processor.process(line, fileName);
-                offsetManager.addOffset(fileName, randomAccessFile.getFilePointer());
+                offsetManager.addOffset(filePath, randomAccessFile.getFilePointer());
                 if (Processor.Offset.COMMIT.equals(commitOffset)) {
                     offsetManager.commitOffsets();
                 }
