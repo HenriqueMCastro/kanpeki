@@ -62,13 +62,8 @@ public class PathReader {
         }
         else{
             while(!isStopped){
-                if(!Thread.interrupted()) {
                     process();
                     Thread.sleep(1000);
-                }
-                else{
-                    Thread.currentThread().interrupt();
-                }
             }
         }
 
@@ -82,16 +77,21 @@ public class PathReader {
         isStopped = true;
     }
 
-    private void process() throws IOException {
+    private void process() throws IOException, InterruptedException {
         findFiles(removeStarsFromPath(path));
         List<RecordReader> fileProcessorsToRemove = null;
         for (RecordReader fileProcessor : fileProcessors.values()) {
-            RecordReader.ExitStatus exitStatus = fileProcessor.processFile();
-            if(RecordReader.ExitStatus.FILE_NO_LONGER_EXISTS.equals(exitStatus)){
-                if(fileProcessorsToRemove == null){
-                    fileProcessorsToRemove = new ArrayList<>();
+            if(!Thread.interrupted()) {
+                RecordReader.ExitStatus exitStatus = fileProcessor.processFile();
+                if (RecordReader.ExitStatus.FILE_NO_LONGER_EXISTS.equals(exitStatus)) {
+                    if (fileProcessorsToRemove == null) {
+                        fileProcessorsToRemove = new ArrayList<>();
+                    }
+                    fileProcessorsToRemove.add(fileProcessor);
                 }
-                fileProcessorsToRemove.add(fileProcessor);
+            }
+            else{
+                throw new InterruptedException();
             }
         }
         if(fileProcessorsToRemove != null) {

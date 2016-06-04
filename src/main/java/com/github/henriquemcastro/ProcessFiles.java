@@ -6,6 +6,7 @@ import com.github.henriquemcastro.record.reader.OffsetManagerNoOp;
 import com.github.henriquemcastro.record.reader.PathReader;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.Properties;
 
 /**
@@ -28,9 +29,14 @@ public class ProcessFiles {
         }
         boolean onePassOnly = Boolean.valueOf(properties.getProperty(KanpekiConfig.ONE_PASS_ONLY_ENABLED, KanpekiConfig.ONE_PASS_ONLY_ENABLED_DEFAULT));
 
-        new PathReader(path, fileFormat, processor, offsetManager, onePassOnly).processPath();
-        offsetManager.close();
-        processor.close();
+        try {
+            PathReader pathReader = new PathReader(path, fileFormat, processor, offsetManager, onePassOnly);
+            pathReader.processPath();
+        } catch (InterruptedException e) {
+            offsetManager.close();
+            processor.close();
+            throw new InterruptedException();
+        }
     }
 
 }

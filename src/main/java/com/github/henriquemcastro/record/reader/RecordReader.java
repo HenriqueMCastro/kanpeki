@@ -36,7 +36,7 @@ public class RecordReader {
         this(filePath, processor, new OffsetManagerNoOp());
     }
 
-    public ExitStatus processFile() throws IOException {
+    public ExitStatus processFile() throws IOException, InterruptedException {
         File file = new File(filePath);
         String fileName = file.getName();
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
@@ -54,7 +54,7 @@ public class RecordReader {
                     numOfMessages++;
                 }
                 else{
-                    Thread.currentThread().interrupt();
+                    throw new InterruptedException();
                 }
             }
             long endOffset = randomAccessFile.getFilePointer();
