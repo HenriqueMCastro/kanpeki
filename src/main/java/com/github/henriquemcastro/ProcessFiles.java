@@ -1,9 +1,6 @@
 package com.github.henriquemcastro;
 
-import com.github.henriquemcastro.record.reader.OffsetManager;
-import com.github.henriquemcastro.record.reader.OffsetManagerDb;
-import com.github.henriquemcastro.record.reader.OffsetManagerNoOp;
-import com.github.henriquemcastro.record.reader.PathReader;
+import com.github.henriquemcastro.record.reader.*;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -22,7 +19,7 @@ public class ProcessFiles {
         String offsetsDbPath = properties.getProperty(KanpekiConfig.OFFSETS_DB_PATH);
         OffsetManager offsetManager;
         if(manageOffsetsEnabled){
-            offsetManager = new OffsetManagerDb(offsetsDbPath);
+            offsetManager = new OffsetManagerTextFile(offsetsDbPath);
         }
         else {
             offsetManager = new OffsetManagerNoOp();
